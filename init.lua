@@ -1,4 +1,4 @@
---[[
+--[[init
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -157,6 +157,8 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.opt.termguicolors = true
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -189,6 +191,39 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- Custom keybindings
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move the selected lines down' })
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move the selected lines up' })
+
+vim.keymap.set('n', 'J', 'mzJ`z', { desc = 'Join lines and keep cursor position' })
+vim.keymap.set('x', '<leader>p', '"_dP', { desc = 'Paste without yanking' })
+
+vim.keymap.set('n', '<leader>y', '"+y', { desc = 'Yank to system clipboard' })
+vim.keymap.set('n', '<leader>Y', '"+Y', { desc = 'Yank to system clipboard without newline' })
+vim.keymap.set('n', '<leader>p', '"+p', { desc = 'Paste from system clipboard' })
+
+vim.keymap.set('n', '<leader>d', '"_d', { desc = 'Delete without yanking' })
+vim.keymap.set('v', '<leader>d', '"_d', { desc = 'Delete without yanking' })
+
+vim.keymap.set('n', 'Q', '<Nop>', { desc = 'Disable Ex mode' })
+
+vim.keymap.set('n', '<C-k>', '<cmd>cnext<CR>zz', { desc = 'Go to the next quickfix item' })
+vim.keymap.set('n', '<C-j>', '<cmd>cprev<CR>zz', { desc = 'Go to the previous quickfix item' })
+
+vim.keymap.set('n', '<leader>k', '<cmd>lnext<CR>zz', { desc = 'Go to the next location list item' })
+vim.keymap.set('n', '<leader>j', '<cmd>lprev<CR>zz', { desc = 'Go to the previous location list item' })
+
+-- tmux keymaps
+vim.keymap.set('n', '<C-h>', '<cmd> TmuxNavigateLeft<CR>', { desc = 'Move to the left tmux pane' })
+vim.keymap.set('n', '<C-l>', '<cmd> TmuxNavigateRight<CR>', { desc = 'Move to the right tmux pane' })
+vim.keymap.set('n', '<C-j>', '<cmd> TmuxNavigateDown<CR>', { desc = 'Move to the bottom tmux pane' })
+vim.keymap.set('n', '<C-k>', '<cmd> TmuxNavigateUp<CR>', { desc = 'Move to the top tmux pane' })
+
+vim.keymap.set('n', '<C-t>', ':tabnew<CR>', { desc = 'Create a new tab' })
+vim.keymap.set('n', '<C-w>', ':tabclose<CR>', { desc = 'Close the current tab' })
+vim.keymap.set('n', '<S-l>', ':tabnext<CR>', { desc = 'Go to the next tab' })
+vim.keymap.set('n', '<S-h>', ':tabprevious<CR>', { desc = 'Go to the previous tab' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -589,14 +624,14 @@ require('lazy').setup({
       })
 
       -- Change diagnostic symbols in the sign column (gutter)
-      -- if vim.g.have_nerd_font then
-      --   local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
-      --   local diagnostic_signs = {}
-      --   for type, icon in pairs(signs) do
-      --     diagnostic_signs[vim.diagnostic.severity[type]] = icon
-      --   end
-      --   vim.diagnostic.config { signs = { text = diagnostic_signs } }
-      -- end
+      if vim.g.have_nerd_font then
+        local signs = { ERROR = '', WARN = '', INFO = '', HINT = '' }
+        local diagnostic_signs = {}
+        for type, icon in pairs(signs) do
+          diagnostic_signs[vim.diagnostic.severity[type]] = icon
+        end
+        vim.diagnostic.config { signs = { text = diagnostic_signs } }
+      end
 
       -- LSP servers and clients are able to communicate to each other what features they support.
       --  By default, Neovim doesn't support everything that is in the LSP specification.
@@ -625,7 +660,17 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
+
+        -- TypeScript and JavaScript
+        ts_ls = {},
+
+        -- Kotlin
+        kotlin_language_server = {
+          cmd = { 'kotlin-language-server' },
+          filetypes = { 'kotlin' },
+          root_dir = require('lspconfig.util').root_pattern('.git', 'build.gradle', 'settings.gradle'),
+        },
+
         --
 
         lua_ls = {
@@ -713,6 +758,7 @@ require('lazy').setup({
         -- python = { "isort", "black" },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
+        kotlin = { 'ktlint' },
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
@@ -899,7 +945,7 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'javascript', 'typescript' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -935,6 +981,7 @@ require('lazy').setup({
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
   require 'custom.plugins.github-copilot',
+  require 'custom.plugins.tmux-terminal',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
